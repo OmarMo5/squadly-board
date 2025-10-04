@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Bell, LogOut, User } from "lucide-react";
+import { Bell, LogOut, User, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,6 +85,13 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          {userRole === "admin" && (
+            <Button variant="outline" onClick={() => navigate("/admin")} className="gap-2">
+              <Shield className="h-4 w-4" />
+              Admin Panel
+            </Button>
+          )}
+
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             {notificationCount > 0 && (

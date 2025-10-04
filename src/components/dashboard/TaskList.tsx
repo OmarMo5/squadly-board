@@ -2,10 +2,23 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle2, Clock, Circle, User, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, Clock, AlertCircle, Edit2, Trash2, Paperclip } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { EditTaskDialog } from "./EditTaskDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Task {
   id: string;
@@ -13,16 +26,18 @@ interface Task {
   description: string | null;
   status: "todo" | "in_progress" | "completed";
   department: string;
-  created_by: string;
-  assigned_to: string | null;
-  due_date: string | null;
   created_at: string;
-  profiles: {
-    full_name: string;
-  };
+  due_date: string | null;
+  assigned_to: string | null;
+  created_by: string;
   assigned_profile?: {
     full_name: string;
-  };
+  } | null;
+  task_attachments?: Array<{
+    id: string;
+    file_name: string;
+    file_path: string;
+  }>;
 }
 
 interface TaskListProps {
@@ -30,14 +45,47 @@ interface TaskListProps {
   userId: string;
 }
 
+function StatusBadge({ status }: { status: string }) {
+  const config = {
+    todo: { label: "To Do", className: "bg-secondary" },
+    in_progress: { label: "In Progress", className: "bg-warning/20 text-warning border-warning" },
+    completed: { label: "Completed", className: "bg-success/20 text-success border-success" },
+  };
+
+  const { label, className } = config[status as keyof typeof config] || config.todo;
+
+  return (
+    <Badge variant="outline" className={className}>
+      {label}
+    </Badge>
+  );
+}
+
+function TaskSkeleton() {
+  return (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-6 w-3/4" />
+        <Skeleton className="h-4 w-1/2 mt-2" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-20 w-full" />
+      </CardContent>
+    </Card>
+  );
+}
+
 export function TaskList({ selectedDepartment, userId }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    checkAdminStatus();
     fetchTasks();
-
-    // Subscribe to real-time updates
+    
+    // Subscribe to realtime changes
     const channel = supabase
       .channel("tasks-changes")
       .on(
@@ -58,183 +106,184 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
     };
   }, [selectedDepartment, userId]);
 
+  const checkAdminStatus = async () => {
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .single();
+
+    setIsAdmin(roleData?.role === "admin");
+  };
+
   const fetchTasks = async () => {
     setLoading(true);
-    try {
-      let query = supabase
-        .from("tasks")
-        .select(`
-          *,
-          profiles!tasks_created_by_fkey(full_name),
-          assigned_profile:profiles!tasks_assigned_to_fkey(full_name)
-        `)
-        .order("created_at", { ascending: false });
+    let query = supabase
+      .from("tasks")
+      .select(`
+        *,
+        assigned_profile:profiles!assigned_to(full_name),
+        task_attachments(id, file_name, file_path)
+      `)
+      .order("created_at", { ascending: false });
 
-      if (selectedDepartment !== "all") {
-        query = query.eq("department", selectedDepartment as "sales" | "accounting" | "tech" | "graphics" | "uiux");
-      }
+    if (selectedDepartment !== "all") {
+      query = query.eq("department", selectedDepartment as any);
+    }
 
-      const { data, error } = await query;
+    const { data, error } = await query;
 
-      if (error) throw error;
-      setTasks(data || []);
-    } catch (error) {
+    if (error) {
       console.error("Error fetching tasks:", error);
-      toast.error("Failed to load tasks");
-    } finally {
-      setLoading(false);
+      setTasks([]);
+    } else {
+      setTasks((data as any) || []);
     }
+
+    setLoading(false);
   };
 
-  const updateTaskStatus = async (taskId: string, newStatus: "todo" | "in_progress" | "completed") => {
-    try {
-      const updates: any = { status: newStatus };
-      if (newStatus === "completed") {
-        updates.completed_at = new Date().toISOString();
-      }
+  const handleDeleteTask = async (taskId: string) => {
+    const { error } = await supabase
+      .from("tasks")
+      .delete()
+      .eq("id", taskId);
 
-      const { error } = await supabase
-        .from("tasks")
-        .update(updates)
-        .eq("id", taskId);
-
-      if (error) throw error;
-      toast.success("Task status updated");
-    } catch (error) {
-      console.error("Error updating task:", error);
-      toast.error("Failed to update task");
+    if (error) {
+      toast.error("Failed to delete task");
+      return;
     }
+
+    toast.success("Task deleted successfully");
+    fetchTasks();
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle2 className="h-4 w-4 text-success" />;
-      case "in_progress":
-        return <Clock className="h-4 w-4 text-warning" />;
-      default:
-        return <Circle className="h-4 w-4 text-muted-foreground" />;
-    }
+  const canEditOrDelete = (task: Task) => {
+    return task.created_by === userId || task.assigned_to === userId || isAdmin;
   };
-
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive"> = {
-      todo: "secondary",
-      in_progress: "default",
-      completed: "default",
-    };
-
-    const colors: Record<string, string> = {
-      todo: "bg-muted",
-      in_progress: "bg-warning/10 text-warning border-warning/20",
-      completed: "bg-success/10 text-success border-success/20",
-    };
-
-    return (
-      <Badge variant={variants[status]} className={colors[status]}>
-        {status.replace("_", " ")}
-      </Badge>
-    );
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-20 w-full" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (tasks.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground">No tasks found</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {tasks.map((task) => (
-        <Card key={task.id} className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1">
-                <CardTitle className="text-lg">{task.title}</CardTitle>
-                <CardDescription className="capitalize mt-1">
-                  {task.department}
-                </CardDescription>
-              </div>
-              {getStatusIcon(task.status)}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {task.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                {task.description}
+    <>
+      <div className="space-y-4">
+        {loading ? (
+          <>
+            <TaskSkeleton />
+            <TaskSkeleton />
+            <TaskSkeleton />
+          </>
+        ) : tasks.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-lg font-medium text-muted-foreground">
+                No tasks found
               </p>
-            )}
-
-            <div className="flex flex-wrap gap-2">
-              {getStatusBadge(task.status)}
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span>Created by: {task.profiles.full_name}</span>
-              </div>
-              {task.assigned_profile && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <User className="h-4 w-4" />
-                  <span>Assigned to: {task.assigned_profile.full_name}</span>
+              <p className="text-sm text-muted-foreground mt-1">
+                Create a task to get started
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          tasks.map((task) => (
+            <Card key={task.id} className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1 flex-1">
+                    <CardTitle className="text-xl">{task.title}</CardTitle>
+                    {task.description && (
+                      <CardDescription className="text-sm">
+                        {task.description}
+                      </CardDescription>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={task.status} />
+                    {canEditOrDelete(task) && (
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setEditingTask(task)}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Task</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteTask(task.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-              {task.due_date && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Badge variant="outline" className="capitalize">
+                        {task.department}
+                      </Badge>
+                    </div>
+                    {task.assigned_profile && (
+                      <div className="flex items-center gap-1">
+                        <span>Assigned to:</span>
+                        <span className="font-medium">{task.assigned_profile.full_name}</span>
+                      </div>
+                    )}
+                    {task.due_date && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>
+                      Created {formatDistanceToNow(new Date(task.created_at), { addSuffix: true })}
+                    </span>
+                    {task.task_attachments && task.task_attachments.length > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Paperclip className="h-3 w-3" />
+                        <span>{task.task_attachments.length} attachment(s)</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
-            {task.status !== "completed" && (task.created_by === userId || task.assigned_to === userId) && (
-              <div className="flex gap-2 pt-2">
-                {task.status === "todo" && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => updateTaskStatus(task.id, "in_progress")}
-                  >
-                    Start Task
-                  </Button>
-                )}
-                {task.status === "in_progress" && (
-                  <Button
-                    size="sm"
-                    variant="default"
-                    onClick={() => updateTaskStatus(task.id, "completed")}
-                  >
-                    Mark Complete
-                  </Button>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+      {editingTask && (
+        <EditTaskDialog
+          task={editingTask}
+          open={!!editingTask}
+          onOpenChange={(open) => !open && setEditingTask(null)}
+          onSuccess={fetchTasks}
+        />
+      )}
+    </>
   );
 }

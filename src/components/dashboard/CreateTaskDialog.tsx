@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, Paperclip, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface Profile {
@@ -33,6 +33,7 @@ export function CreateTaskDialog() {
   const [dueDate, setDueDate] = useState("");
   const [users, setUsers] = useState<Profile[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
     if (open) {
@@ -73,17 +74,47 @@ export function CreateTaskDialog() {
         return;
       }
 
-      const { error } = await supabase.from("tasks").insert({
-        title,
-        description: description || null,
-        department: department as "sales" | "accounting" | "tech" | "graphics" | "uiux",
-        assigned_to: assignedTo || null,
-        due_date: dueDate || null,
-        created_by: currentUserId,
-        status: "todo" as "todo" | "in_progress" | "completed",
-      });
+      const { data: taskData, error: taskError } = await supabase
+        .from("tasks")
+        .insert({
+          title,
+          description: description || null,
+          department: department as "sales" | "accounting" | "tech" | "graphics" | "uiux",
+          assigned_to: assignedTo || null,
+          due_date: dueDate || null,
+          created_by: currentUserId,
+          status: "todo" as "todo" | "in_progress" | "completed",
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (taskError) throw taskError;
+
+      // Upload files if any
+      if (files.length > 0 && taskData) {
+        for (const file of files) {
+          const fileExt = file.name.split(".").pop();
+          const fileName = `${currentUserId}/${taskData.id}/${Date.now()}.${fileExt}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("task-attachments")
+            .upload(fileName, file);
+
+          if (uploadError) {
+            console.error("Error uploading file:", uploadError);
+            continue;
+          }
+
+          // Save file reference to database
+          await supabase.from("task_attachments").insert({
+            task_id: taskData.id,
+            file_name: file.name,
+            file_path: fileName,
+            file_size: file.size,
+            uploaded_by: currentUserId,
+          });
+        }
+      }
 
       toast.success("Task created successfully");
       setOpen(false);
@@ -96,12 +127,40 @@ export function CreateTaskDialog() {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      const validFiles = newFiles.filter((file) => {
+        const isValidType =
+          file.type.startsWith("image/") || file.type === "application/pdf";
+        const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
+
+        if (!isValidType) {
+          toast.error(`${file.name} is not a valid file type`);
+          return false;
+        }
+        if (!isValidSize) {
+          toast.error(`${file.name} exceeds 10MB limit`);
+          return false;
+        }
+        return true;
+      });
+
+      setFiles((prev) => [...prev, ...validFiles]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const resetForm = () => {
     setTitle("");
     setDescription("");
     setDepartment("");
     setAssignedTo("");
     setDueDate("");
+    setFiles([]);
   };
 
   const filteredUsers = department
@@ -190,6 +249,46 @@ export function CreateTaskDialog() {
                 onChange={(e) => setDueDate(e.target.value)}
                 disabled={loading}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="attachments">Attachments (Images or PDFs)</Label>
+              <Input
+                id="attachments"
+                type="file"
+                onChange={handleFileChange}
+                disabled={loading}
+                accept="image/*,application/pdf"
+                multiple
+                className="cursor-pointer"
+              />
+              {files.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  {files.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 bg-muted rounded-md text-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Paperclip className="h-4 w-4" />
+                        <span className="truncate max-w-[200px]">{file.name}</span>
+                        <span className="text-muted-foreground">
+                          ({(file.size / 1024).toFixed(1)} KB)
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeFile(index)}
+                        disabled={loading}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>
