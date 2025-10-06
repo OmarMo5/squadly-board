@@ -10,6 +10,7 @@ import { Shield, Plus, Edit, Trash2 } from "lucide-react";
 import { Header } from "@/components/dashboard/Header";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { RolePermissionsDialog } from "@/components/admin/RolePermissionsDialog";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 type Permission = {
   id: string;
@@ -148,25 +149,28 @@ export default function RolesPermissions() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen w-full">
-      <AdminSidebar />
-        <div className="flex-1">
-          <Header />
-          <main className="p-6">
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-32 w-full" />
-              ))}
-            </div>
-          </main>
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full">
+          <AdminSidebar />
+          <div className="flex-1">
+            <Header />
+            <main className="p-6">
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-32 w-full" />
+                ))}
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="flex min-h-screen w-full">
-      <AdminSidebar />
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AdminSidebar />
       <div className="flex-1">
         <Header />
         <main className="p-6">
@@ -252,6 +256,7 @@ export default function RolesPermissions() {
           onSave={handleSavePermissions}
         />
       )}
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }

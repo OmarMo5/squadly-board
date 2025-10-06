@@ -26,6 +26,7 @@ import { Header } from "@/components/dashboard/Header";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
 import { format } from "date-fns";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 type User = {
   id: string;
@@ -168,25 +169,28 @@ export default function UsersManagement() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen w-full">
-      <AdminSidebar />
-        <div className="flex-1">
-          <Header />
-          <main className="p-6">
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Skeleton key={i} className="h-16 w-full" />
-              ))}
-            </div>
-          </main>
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full">
+          <AdminSidebar />
+          <div className="flex-1">
+            <Header />
+            <main className="p-6">
+              <div className="space-y-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="flex min-h-screen w-full">
-      <AdminSidebar />
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AdminSidebar />
       <div className="flex-1">
         <Header />
         <main className="p-6">
@@ -292,6 +296,7 @@ export default function UsersManagement() {
         onOpenChange={setCreateDialogOpen}
         onSuccess={fetchUsers}
       />
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }
