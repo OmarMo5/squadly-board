@@ -168,9 +168,9 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todo">To Do</SelectItem>
+                  <SelectItem value="todo">Start</SelectItem>
                   <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="completed">Complete</SelectItem>
                 </SelectContent>
               </Select>
             </div>
