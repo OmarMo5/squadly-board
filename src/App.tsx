@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import RolesPermissions from "./pages/RolesPermissions";
 import UsersManagement from "./pages/UsersManagement";
+import AdminManagement from "./pages/AdminManagement";
 import NotFound from "./pages/NotFound";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/roles" element={<RolesPermissions />} />
             <Route path="/admin/users" element={<UsersManagement />} />
+            <Route path="/admin/admins" element={<AdminManagement />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

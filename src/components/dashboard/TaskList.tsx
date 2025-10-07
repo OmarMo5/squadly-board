@@ -33,6 +33,9 @@ interface Task {
   assigned_profile?: {
     full_name: string;
   } | null;
+  creator_profile?: {
+    full_name: string;
+  } | null;
   task_attachments?: Array<{
     id: string;
     file_name: string;
@@ -124,6 +127,7 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
       .select(`
         *,
         assigned_profile:profiles!assigned_to(full_name),
+        creator_profile:profiles!created_by(full_name),
         task_attachments(id, file_name, file_path)
       `)
       .order("created_at", { ascending: false });
@@ -298,6 +302,12 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
               <Badge variant="outline" className="capitalize">
                 {task.department}
               </Badge>
+              {task.creator_profile && (
+                <div className="flex items-center gap-1">
+                  <span>Created by:</span>
+                  <span className="font-medium">{task.creator_profile.full_name}</span>
+                </div>
+              )}
               {task.assigned_profile && (
                 <div className="flex items-center gap-1">
                   <span>Assigned to:</span>

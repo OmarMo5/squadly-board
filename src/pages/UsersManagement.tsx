@@ -21,10 +21,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Users, Search, Trash2, UserPlus, Filter } from "lucide-react";
+import { Users, Search, Trash2, UserPlus, Filter, Edit } from "lucide-react";
 import { Header } from "@/components/dashboard/Header";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
+import { EditUserDialog } from "@/components/admin/EditUserDialog";
 import { format } from "date-fns";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
@@ -45,6 +46,7 @@ export default function UsersManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -135,8 +137,7 @@ export default function UsersManagement() {
     }
 
     try {
-      // Note: In a real app, you'd need a server-side function to delete auth users
-      // For now, we'll just delete the profile and role
+      // Delete role and profile
       const { error: roleError } = await supabase
         .from("user_roles")
         .delete()
@@ -149,8 +150,11 @@ export default function UsersManagement() {
 
       if (roleError || profileError) throw roleError || profileError;
 
+      // Update state immediately without refetching
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+      setFilteredUsers((prev) => prev.filter((u) => u.id !== userId));
+      
       toast.success(`User ${userName} deleted successfully`);
-      fetchUsers();
     } catch (error: any) {
       toast.error("Failed to delete user: " + error.message);
     }
@@ -270,13 +274,22 @@ export default function UsersManagement() {
                         {format(new Date(user.created_at), "MMM d, yyyy")}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteUser(user.id, user.full_name)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <div className="flex gap-1 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingUser(user)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteUser(user.id, user.full_name)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -296,6 +309,15 @@ export default function UsersManagement() {
         onOpenChange={setCreateDialogOpen}
         onSuccess={fetchUsers}
       />
+
+      {editingUser && (
+        <EditUserDialog
+          user={editingUser}
+          open={!!editingUser}
+          onOpenChange={(open) => !open && setEditingUser(null)}
+          onSuccess={fetchUsers}
+        />
+      )}
       </div>
     </SidebarProvider>
   );

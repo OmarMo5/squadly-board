@@ -16,6 +16,7 @@ const adminMenuItems = [
   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { id: "roles", name: "Roles & Permissions", icon: Shield, path: "/admin/roles" },
   { id: "users", name: "Users Management", icon: Users, path: "/admin/users" },
+  { id: "admins", name: "Admin Management", icon: Shield, path: "/admin/admins" },
 ];
 
 export function AdminSidebar() {
