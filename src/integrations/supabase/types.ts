@@ -256,6 +256,7 @@ export type Database = {
           completed_at: string | null
           created_at: string | null
           created_by: string
+          deleted_at: string | null
           department: Database["public"]["Enums"]["department_type"]
           description: string | null
           due_date: string | null
@@ -269,6 +270,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           created_by: string
+          deleted_at?: string | null
           department: Database["public"]["Enums"]["department_type"]
           description?: string | null
           due_date?: string | null
@@ -282,6 +284,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           created_by?: string
+          deleted_at?: string | null
           department?: Database["public"]["Enums"]["department_type"]
           description?: string | null
           due_date?: string | null
