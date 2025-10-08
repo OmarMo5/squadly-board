@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Bell, LogOut, User, Shield } from "lucide-react";
+import { LogOut, User, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,12 +14,12 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { NotificationsDropdown } from "./NotificationsDropdown";
 
 export function Header() {
   const navigate = useNavigate();
   const [userName, setUserName] = useState<string>("");
   const [userRole, setUserRole] = useState<string>("");
-  const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -39,15 +39,6 @@ export function Header() {
 
         if (profile) setUserName(profile.full_name);
         if (roleData) setUserRole(roleData.role);
-
-        // Fetch unread notifications count
-        const { count } = await supabase
-          .from("notifications")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .eq("is_read", false);
-
-        setNotificationCount(count || 0);
       }
     };
 
@@ -92,14 +83,7 @@ export function Header() {
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
-                {notificationCount}
-              </span>
-            )}
-          </Button>
+          <NotificationsDropdown />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

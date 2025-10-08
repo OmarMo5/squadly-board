@@ -10,13 +10,14 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Shield, Users, LayoutDashboard } from "lucide-react";
+import { Shield, Users, LayoutDashboard, History } from "lucide-react";
 
 const adminMenuItems = [
   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
   { id: "roles", name: "Roles & Permissions", icon: Shield, path: "/admin/roles" },
   { id: "users", name: "Users Management", icon: Users, path: "/admin/users" },
   { id: "admins", name: "Admin Management", icon: Shield, path: "/admin/admins" },
+  { id: "history", name: "Task History", icon: History, path: "/admin/task-history" },
 ];
 
 export function AdminSidebar() {

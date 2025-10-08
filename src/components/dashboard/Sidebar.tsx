@@ -10,8 +10,9 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Home, DollarSign, Calculator, Code, Palette, Layout, Shield, Users, Settings } from "lucide-react";
+import { Home, DollarSign, Calculator, Code, Palette, Layout, Shield, Users, Settings, ListTodo, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface SidebarProps {
   selectedDepartment: string;
@@ -35,6 +36,8 @@ const adminItems = [
 
 export function Sidebar({ selectedDepartment, onDepartmentChange }: SidebarProps) {
   const [isAdmin, setIsAdmin] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const checkAdminRole = async () => {
@@ -65,14 +68,43 @@ export function Sidebar({ selectedDepartment, onDepartmentChange }: SidebarProps
 
       <SidebarContent>
         <SidebarGroup>
+          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => navigate("/dashboard")}
+                  isActive={location.pathname === "/dashboard"}
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => navigate("/tasks")}
+                  isActive={location.pathname === "/tasks"}
+                >
+                  <ListTodo className="h-4 w-4" />
+                  <span>Tasks</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
           <SidebarGroupLabel>Departments</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {departments.map((dept) => (
                 <SidebarMenuItem key={dept.id}>
                   <SidebarMenuButton
-                    onClick={() => onDepartmentChange(dept.id)}
-                    isActive={selectedDepartment === dept.id}
+                    onClick={() => {
+                      navigate("/tasks");
+                      onDepartmentChange(dept.id);
+                    }}
+                    isActive={selectedDepartment === dept.id && location.pathname === "/tasks"}
                   >
                     <dept.icon className="h-4 w-4" />
                     <span>{dept.name}</span>

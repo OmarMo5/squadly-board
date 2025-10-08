@@ -30,6 +30,7 @@ interface Task {
   due_date: string | null;
   assigned_to: string | null;
   created_by: string;
+  deleted_at: string | null;
   assigned_profile?: {
     full_name: string;
   } | null;
@@ -132,6 +133,11 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
       `)
       .order("created_at", { ascending: false });
 
+    // Admins see all tasks including deleted, others only see non-deleted
+    if (!isAdmin) {
+      query = query.is("deleted_at", null);
+    }
+
     if (selectedDepartment !== "all") {
       query = query.eq("department", selectedDepartment as any);
     }
@@ -149,9 +155,10 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
   };
 
   const handleDeleteTask = async (taskId: string) => {
+    // Soft delete - only set deleted_at timestamp
     const { error } = await supabase
       .from("tasks")
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq("id", taskId);
 
     if (error) {
@@ -246,10 +253,16 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
     const buttonConfig = getStatusButtonConfig(task.status);
     const ButtonIcon = buttonConfig.icon;
     const isUpdating = updatingStatus === task.id;
+    const isDeleted = task.deleted_at !== null;
 
     return (
-      <Card key={task.id} className="hover:shadow-md transition-shadow mb-4">
+      <Card key={task.id} className={`hover:shadow-md transition-shadow mb-4 ${isDeleted ? "opacity-50 border-destructive" : ""}`}>
         <CardHeader>
+          {isDeleted && (
+            <Badge variant="destructive" className="w-fit mb-2">
+              Deleted {formatDistanceToNow(new Date(task.deleted_at!), { addSuffix: true })}
+            </Badge>
+          )}
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1 flex-1">
               <CardTitle className="text-lg">{task.title}</CardTitle>
@@ -259,7 +272,7 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
                 </CardDescription>
               )}
             </div>
-            {canEditOrDelete(task) && (
+            {canEditOrDelete(task) && !isDeleted && (
               <div className="flex gap-1">
                 <Button
                   variant="ghost"
@@ -352,19 +365,21 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
               <span className="text-xs text-muted-foreground">
                 Created {formatDistanceToNow(new Date(task.created_at), { addSuffix: true })}
               </span>
-              <Button
-                variant={buttonConfig.variant}
-                size="sm"
-                onClick={() => handleStatusChange(task.id, task.status)}
-                disabled={buttonConfig.disabled || isUpdating}
-              >
-                {isUpdating ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <ButtonIcon className="h-4 w-4 mr-2" />
-                )}
-                {buttonConfig.label}
-              </Button>
+              {!isDeleted && (
+                <Button
+                  variant={buttonConfig.variant}
+                  size="sm"
+                  onClick={() => handleStatusChange(task.id, task.status)}
+                  disabled={buttonConfig.disabled || isUpdating}
+                >
+                  {isUpdating ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <ButtonIcon className="h-4 w-4 mr-2" />
+                  )}
+                  {buttonConfig.label}
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>

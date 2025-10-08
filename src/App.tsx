@@ -5,11 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+import Home from "./pages/Home";
+import Tasks from "./pages/Tasks";
 import Admin from "./pages/Admin";
 import RolesPermissions from "./pages/RolesPermissions";
 import UsersManagement from "./pages/UsersManagement";
 import AdminManagement from "./pages/AdminManagement";
+import AdminTaskHistory from "./pages/AdminTaskHistory";
 import NotFound from "./pages/NotFound";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
@@ -25,11 +27,13 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Home />} />
+            <Route path="/tasks" element={<Tasks />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/roles" element={<RolesPermissions />} />
             <Route path="/admin/users" element={<UsersManagement />} />
             <Route path="/admin/admins" element={<AdminManagement />} />
+            <Route path="/admin/task-history" element={<AdminTaskHistory />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
