@@ -6,9 +6,9 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      <div className="container mx-auto px-4 py-20">
-        <div className="text-center space-y-8 max-w-4xl mx-auto">
+    <div className="min-h-screen w-full bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      <div className="w-full px-4 py-20">
+        <div className="text-center space-y-8 max-w-6xl mx-auto">
           <div className="flex justify-center">
             <div className="p-4 bg-primary rounded-3xl shadow-2xl">
               <Briefcase className="h-16 w-16 text-primary-foreground" />
@@ -18,7 +18,7 @@ const Index = () => {
           <h1 className="text-6xl font-bold tracking-tight">
             Welcome to <span className="text-primary">TaskFlow</span>
           </h1>
-          
+
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             A powerful task management and communication platform designed for teams.
             Streamline your workflow, boost productivity, and keep everyone connected.
@@ -33,7 +33,7 @@ const Index = () => {
             </Button>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 pt-16">
+          <div className="grid md:grid-cols-3 gap-8 pt-16 w-full px-6">
             <div className="p-6 rounded-2xl bg-card border border-border/50 shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-primary/10 rounded-xl">
