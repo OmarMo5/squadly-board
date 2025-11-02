@@ -42,6 +42,15 @@ interface Task {
     file_name: string;
     file_path: string;
   }>;
+  task_assignments?: Array<{
+    user_id: string;
+    profiles: {
+      full_name: string;
+    };
+  }>;
+  task_completions?: Array<{
+    user_id: string;
+  }>;
 }
 
 interface TaskListProps {
@@ -129,7 +138,9 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
         *,
         assigned_profile:profiles!assigned_to(full_name),
         creator_profile:profiles!created_by(full_name),
-        task_attachments(id, file_name, file_path)
+        task_attachments(id, file_name, file_path),
+        task_assignments(user_id, profiles(full_name)),
+        task_completions(user_id)
       `)
       .order("created_at", { ascending: false });
 
@@ -174,29 +185,47 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
     return task.created_by === userId || task.assigned_to === userId || isAdmin;
   };
 
-  const handleStatusChange = async (taskId: string, currentStatus: string) => {
-    const statusFlow: Record<string, "todo" | "in_progress" | "completed"> = {
-      todo: "in_progress",
-      in_progress: "completed",
-      completed: "completed",
-    };
-
-    const newStatus = statusFlow[currentStatus];
+  const handleMarkComplete = async (taskId: string) => {
     setUpdatingStatus(taskId);
 
-    const { error } = await supabase
-      .from("tasks")
-      .update({ status: newStatus })
-      .eq("id", taskId);
+    // Check if already completed
+    const { data: existing } = await supabase
+      .from("task_completions")
+      .select("id")
+      .eq("task_id", taskId)
+      .eq("user_id", userId)
+      .single();
 
-    setUpdatingStatus(null);
+    if (existing) {
+      // Unmark completion
+      const { error } = await supabase
+        .from("task_completions")
+        .delete()
+        .eq("task_id", taskId)
+        .eq("user_id", userId);
 
-    if (error) {
-      toast.error("Failed to update task status");
-      return;
+      if (error) {
+        toast.error("Failed to update completion status");
+      } else {
+        toast.success("Completion status updated");
+      }
+    } else {
+      // Mark as complete
+      const { error } = await supabase
+        .from("task_completions")
+        .insert({
+          task_id: taskId,
+          user_id: userId,
+        });
+
+      if (error) {
+        toast.error("Failed to mark as complete");
+      } else {
+        toast.success("Marked as complete!");
+      }
     }
 
-    toast.success("Task status updated");
+    setUpdatingStatus(null);
     fetchTasks();
   };
 
@@ -254,6 +283,10 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
     const ButtonIcon = buttonConfig.icon;
     const isUpdating = updatingStatus === task.id;
     const isDeleted = task.deleted_at !== null;
+    const isAssignedToMe = task.task_assignments?.some(a => a.user_id === userId) || false;
+    const myCompletion = task.task_completions?.find(c => c.user_id === userId);
+    const totalAssigned = task.task_assignments?.length || 0;
+    const totalCompleted = task.task_completions?.length || 0;
 
     return (
       <Card key={task.id} className={`hover:shadow-md transition-shadow mb-4 ${isDeleted ? "opacity-50 border-destructive" : ""}`}>
@@ -321,10 +354,18 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
                   <span className="font-medium">{task.creator_profile.full_name}</span>
                 </div>
               )}
-              {task.assigned_profile && (
-                <div className="flex items-center gap-1">
+              {task.task_assignments && task.task_assignments.length > 0 && (
+                <div className="flex items-center gap-1 flex-wrap">
                   <span>Assigned to:</span>
-                  <span className="font-medium">{task.assigned_profile.full_name}</span>
+                  {task.task_assignments.map((assignment, idx) => (
+                    <span key={assignment.user_id} className="font-medium">
+                      {assignment.profiles.full_name}
+                      {idx < task.task_assignments!.length - 1 && ","}
+                    </span>
+                  ))}
+                  <Badge variant="outline" className="ml-1">
+                    {totalCompleted}/{totalAssigned} completed
+                  </Badge>
                 </div>
               )}
               {task.due_date && (
@@ -365,19 +406,19 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
               <span className="text-xs text-muted-foreground">
                 Created {formatDistanceToNow(new Date(task.created_at), { addSuffix: true })}
               </span>
-              {!isDeleted && (
+              {!isDeleted && isAssignedToMe && (
                 <Button
-                  variant={buttonConfig.variant}
+                  variant={myCompletion ? "outline" : "default"}
                   size="sm"
-                  onClick={() => handleStatusChange(task.id, task.status)}
-                  disabled={buttonConfig.disabled || isUpdating}
+                  onClick={() => handleMarkComplete(task.id)}
+                  disabled={isUpdating}
                 >
                   {isUpdating ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
-                    <ButtonIcon className="h-4 w-4 mr-2" />
+                    <CheckCircle2 className={`h-4 w-4 mr-2 ${myCompletion ? "fill-current" : ""}`} />
                   )}
-                  {buttonConfig.label}
+                  {myCompletion ? "Completed" : "Mark Complete"}
                 </Button>
               )}
             </div>

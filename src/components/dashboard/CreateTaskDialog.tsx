@@ -29,7 +29,7 @@ export function CreateTaskDialog() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [department, setDepartment] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
+  const [assignedUsers, setAssignedUsers] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState("");
   const [users, setUsers] = useState<Profile[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>("");
@@ -80,7 +80,7 @@ export function CreateTaskDialog() {
           title,
           description: description || null,
           department: department as "sales" | "accounting" | "tech" | "graphics" | "uiux",
-          assigned_to: assignedTo || null,
+          assigned_to: null,
           due_date: dueDate || null,
           created_by: currentUserId,
           status: "todo" as "todo" | "in_progress" | "completed",
@@ -89,6 +89,20 @@ export function CreateTaskDialog() {
         .single();
 
       if (taskError) throw taskError;
+
+      // Create task assignments for multiple users
+      if (assignedUsers.length > 0 && taskData) {
+        const assignments = assignedUsers.map(userId => ({
+          task_id: taskData.id,
+          user_id: userId,
+        }));
+
+        const { error: assignError } = await supabase
+          .from("task_assignments")
+          .insert(assignments);
+
+        if (assignError) throw assignError;
+      }
 
       // Upload files if any
       if (files.length > 0 && taskData) {
@@ -158,9 +172,17 @@ export function CreateTaskDialog() {
     setTitle("");
     setDescription("");
     setDepartment("");
-    setAssignedTo("");
+    setAssignedUsers([]);
     setDueDate("");
     setFiles([]);
+  };
+
+  const toggleUserAssignment = (userId: string) => {
+    setAssignedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
   };
 
   const filteredUsers = department
@@ -225,19 +247,36 @@ export function CreateTaskDialog() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="assigned-to">Assign To</Label>
-              <Select value={assignedTo} onValueChange={setAssignedTo} disabled={loading}>
-                <SelectTrigger id="assigned-to">
-                  <SelectValue placeholder="Select team member (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.full_name} ({user.department})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Assign To (Multiple Users)</Label>
+              <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
+                {filteredUsers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    {department ? "No users in this department" : "Select a department first"}
+                  </p>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <div key={user.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`user-${user.id}`}
+                        checked={assignedUsers.includes(user.id)}
+                        onChange={() => toggleUserAssignment(user.id)}
+                        disabled={loading}
+                        className="rounded border-input"
+                      />
+                      <Label
+                        htmlFor={`user-${user.id}`}
+                        className="text-sm font-normal cursor-pointer flex-1"
+                      >
+                        {user.full_name}
+                      </Label>
+                    </div>
+                  ))
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {assignedUsers.length} user(s) selected
+              </p>
             </div>
 
             <div className="space-y-2">

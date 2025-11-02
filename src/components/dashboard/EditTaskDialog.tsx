@@ -44,7 +44,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
   const [department, setDepartment] = useState(task.department);
-  const [assignedTo, setAssignedTo] = useState(task.assigned_to || "");
+  const [assignedUsers, setAssignedUsers] = useState<string[]>([]);
   const [dueDate, setDueDate] = useState(
     task.due_date ? new Date(task.due_date).toISOString().split("T")[0] : ""
   );
@@ -54,15 +54,26 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
   useEffect(() => {
     if (open) {
       fetchUsers();
+      fetchTaskAssignments();
       // Reset form with task data
       setTitle(task.title);
       setDescription(task.description || "");
       setDepartment(task.department);
-      setAssignedTo(task.assigned_to || "");
       setDueDate(task.due_date ? new Date(task.due_date).toISOString().split("T")[0] : "");
       setStatus(task.status);
     }
   }, [open, task]);
+
+  const fetchTaskAssignments = async () => {
+    const { data, error } = await supabase
+      .from("task_assignments")
+      .select("user_id")
+      .eq("task_id", task.id);
+
+    if (!error && data) {
+      setAssignedUsers(data.map(a => a.user_id));
+    }
+  };
 
   const fetchUsers = async () => {
     const { data, error } = await supabase
@@ -89,13 +100,34 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
           title,
           description: description || null,
           department: department as "sales" | "accounting" | "tech" | "graphics" | "uiux",
-          assigned_to: assignedTo || null,
+          assigned_to: null,
           due_date: dueDate || null,
           status: status as "todo" | "in_progress" | "completed",
         })
         .eq("id", task.id);
 
       if (error) throw error;
+
+      // Update task assignments
+      // First delete existing assignments
+      await supabase
+        .from("task_assignments")
+        .delete()
+        .eq("task_id", task.id);
+
+      // Then create new assignments
+      if (assignedUsers.length > 0) {
+        const assignments = assignedUsers.map(userId => ({
+          task_id: task.id,
+          user_id: userId,
+        }));
+
+        const { error: assignError } = await supabase
+          .from("task_assignments")
+          .insert(assignments);
+
+        if (assignError) throw assignError;
+      }
 
       toast.success("Task updated successfully");
       onOpenChange(false);
@@ -111,6 +143,14 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
   const filteredUsers = department
     ? users.filter((u) => u.department === department)
     : users;
+
+  const toggleUserAssignment = (userId: string) => {
+    setAssignedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -176,19 +216,36 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-assigned-to">Assign To</Label>
-              <Select value={assignedTo} onValueChange={setAssignedTo} disabled={loading}>
-                <SelectTrigger id="edit-assigned-to">
-                  <SelectValue placeholder="Select team member (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.full_name} ({user.department})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Assign To (Multiple Users)</Label>
+              <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
+                {filteredUsers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    {department ? "No users in this department" : "Select a department first"}
+                  </p>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <div key={user.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`edit-user-${user.id}`}
+                        checked={assignedUsers.includes(user.id)}
+                        onChange={() => toggleUserAssignment(user.id)}
+                        disabled={loading}
+                        className="rounded border-input"
+                      />
+                      <Label
+                        htmlFor={`edit-user-${user.id}`}
+                        className="text-sm font-normal cursor-pointer flex-1"
+                      >
+                        {user.full_name}
+                      </Label>
+                    </div>
+                  ))
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {assignedUsers.length} user(s) selected
+              </p>
             </div>
 
             <div className="space-y-2">

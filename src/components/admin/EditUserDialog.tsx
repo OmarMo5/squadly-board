@@ -47,12 +47,14 @@ export function EditUserDialog({
   const [email, setEmail] = useState(user.email);
   const [department, setDepartment] = useState<string>(user.department || "");
   const [role, setRole] = useState<string>(user.role || "employee");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     setFullName(user.full_name);
     setEmail(user.email);
     setDepartment(user.department || "");
     setRole(user.role || "employee");
+    setPassword("");
   }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,6 +81,27 @@ export function EditUserDialog({
         .eq("user_id", user.id);
 
       if (roleError) throw roleError;
+
+      // Update password if provided
+      if (password) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-user-password`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session?.access_token}`,
+            },
+            body: JSON.stringify({ userId: user.id, password }),
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Failed to update password");
+        }
+      }
 
       toast.success("User updated successfully");
       onSuccess();
@@ -147,6 +170,19 @@ export function EditUserDialog({
                   <SelectItem value="employee">Employee</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">New Password (optional)</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Leave blank to keep current"
+              />
+              <p className="text-xs text-muted-foreground">
+                Only fill this field if you want to change the user's password
+              </p>
             </div>
           </div>
           <DialogFooter>
