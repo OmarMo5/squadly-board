@@ -8,7 +8,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Home, DollarSign, Calculator, Code, Palette, Layout, Shield, Users, Settings, ListTodo, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,9 +60,8 @@ export function Sidebar({ selectedDepartment, onDepartmentChange }: SidebarProps
 
   return (
     <SidebarUI>
-      <div className="p-4 flex items-center justify-between border-b border-sidebar-border">
+      <div className="p-4 border-b border-sidebar-border">
         <h1 className="text-xl font-bold text-sidebar-foreground">TaskFlow</h1>
-        <SidebarTrigger />
       </div>
 
       <SidebarContent>

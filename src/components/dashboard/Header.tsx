@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { NotificationsDropdown } from "./NotificationsDropdown";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export function Header() {
   const navigate = useNavigate();
@@ -68,6 +69,7 @@ export function Header() {
     <header className="border-b border-border bg-card">
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4">
+          <SidebarTrigger />
           {userRole && (
             <Badge variant="secondary" className="capitalize">
               {userRole}

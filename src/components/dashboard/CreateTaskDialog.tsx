@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Loader2, Paperclip, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -197,15 +198,16 @@ export function CreateTaskDialog() {
           Create Task
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px]">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="sm:max-w-[525px] max-h-[90vh] flex flex-col">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
           <DialogHeader>
             <DialogTitle>Create New Task</DialogTitle>
             <DialogDescription>
               Add a new task to assign to your team members
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <ScrollArea className="flex-1 pr-4">
+            <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="title">Task Title</Label>
               <Input
@@ -330,7 +332,8 @@ export function CreateTaskDialog() {
               )}
             </div>
           </div>
-          <DialogFooter>
+          </ScrollArea>
+          <DialogFooter className="pt-4">
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Task
