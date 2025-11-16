@@ -229,6 +229,24 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
     fetchTasks();
   };
 
+  const handleStatusChange = async (taskId: string, newStatus: "todo" | "in_progress" | "completed") => {
+    setUpdatingStatus(taskId);
+
+    const { error } = await supabase
+      .from("tasks")
+      .update({ status: newStatus })
+      .eq("id", taskId);
+
+    if (error) {
+      toast.error("Failed to update task status");
+    } else {
+      toast.success("Task status updated!");
+    }
+
+    setUpdatingStatus(null);
+    fetchTasks();
+  };
+
   const handleDownloadFile = async (filePath: string, fileName: string) => {
     const { data, error } = await supabase.storage
       .from("task-attachments")
@@ -406,21 +424,57 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
               <span className="text-xs text-muted-foreground">
                 Created {formatDistanceToNow(new Date(task.created_at), { addSuffix: true })}
               </span>
-              {!isDeleted && isAssignedToMe && (
-                <Button
-                  variant={myCompletion ? "outline" : "default"}
-                  size="sm"
-                  onClick={() => handleMarkComplete(task.id)}
-                  disabled={isUpdating}
-                >
-                  {isUpdating ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <CheckCircle2 className={`h-4 w-4 mr-2 ${myCompletion ? "fill-current" : ""}`} />
-                  )}
-                  {myCompletion ? "Completed" : "Mark Complete"}
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {!isDeleted && isAdmin && (
+                  <div className="flex gap-1">
+                    {task.status !== "todo" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStatusChange(task.id, "todo")}
+                        disabled={isUpdating}
+                      >
+                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Move to Start"}
+                      </Button>
+                    )}
+                    {task.status !== "in_progress" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStatusChange(task.id, "in_progress")}
+                        disabled={isUpdating}
+                      >
+                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Move to In Progress"}
+                      </Button>
+                    )}
+                    {task.status !== "completed" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStatusChange(task.id, "completed")}
+                        disabled={isUpdating}
+                      >
+                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Move to Complete"}
+                      </Button>
+                    )}
+                  </div>
+                )}
+                {!isDeleted && isAssignedToMe && (
+                  <Button
+                    variant={myCompletion ? "outline" : "default"}
+                    size="sm"
+                    onClick={() => handleMarkComplete(task.id)}
+                    disabled={isUpdating}
+                  >
+                    {isUpdating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className={`h-4 w-4 mr-2 ${myCompletion ? "fill-current" : ""}`} />
+                    )}
+                    {myCompletion ? "Completed" : "Mark Complete"}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
