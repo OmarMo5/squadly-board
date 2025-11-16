@@ -137,18 +137,17 @@ export default function UsersManagement() {
     }
 
     try {
-      // Delete role and profile
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .delete()
-        .eq("user_id", userId);
+      // Call the edge function to properly delete the user
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
 
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("id", userId);
-
-      if (roleError || profileError) throw roleError || profileError;
+      if (error) throw error;
 
       // Update state immediately without refetching
       setUsers((prev) => prev.filter((u) => u.id !== userId));
