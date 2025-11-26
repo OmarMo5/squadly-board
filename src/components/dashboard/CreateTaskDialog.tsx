@@ -198,15 +198,15 @@ export function CreateTaskDialog() {
           Create Task
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px] max-h-[90vh] flex flex-col">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full">
-          <DialogHeader>
-            <DialogTitle>Create New Task</DialogTitle>
-            <DialogDescription>
-              Add a new task to assign to your team members
-            </DialogDescription>
-          </DialogHeader>
-          <ScrollArea className="flex-1 pr-4">
+      <DialogContent className="sm:max-w-[525px] max-h-[85vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle>Create New Task</DialogTitle>
+          <DialogDescription>
+            Add a new task to assign to your team members
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <ScrollArea className="max-h-[calc(85vh-180px)] pr-4">
             <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="title">Task Title</Label>
@@ -333,7 +333,7 @@ export function CreateTaskDialog() {
             </div>
           </div>
           </ScrollArea>
-          <DialogFooter className="pt-4">
+          <DialogFooter className="mt-4 pt-4 border-t">
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Task
