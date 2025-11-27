@@ -12,6 +12,10 @@ import RolesPermissions from "./pages/RolesPermissions";
 import UsersManagement from "./pages/UsersManagement";
 import AdminManagement from "./pages/AdminManagement";
 import AdminTaskHistory from "./pages/AdminTaskHistory";
+import Profile from "./pages/Profile";
+import NotificationsCenter from "./pages/NotificationsCenter";
+import FileManager from "./pages/FileManager";
+import DepartmentManagement from "./pages/DepartmentManagement";
 import NotFound from "./pages/NotFound";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
@@ -34,6 +38,10 @@ const App = () => (
             <Route path="/admin/users" element={<UsersManagement />} />
             <Route path="/admin/admins" element={<AdminManagement />} />
             <Route path="/admin/task-history" element={<AdminTaskHistory />} />
+            <Route path="/admin/departments" element={<DepartmentManagement />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/notifications" element={<NotificationsCenter />} />
+            <Route path="/files" element={<FileManager />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
