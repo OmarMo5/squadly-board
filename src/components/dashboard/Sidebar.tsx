@@ -9,13 +9,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Home, DollarSign, Calculator, Code, Palette, Layout, Shield, Users, Settings, ListTodo, BarChart3 } from "lucide-react";
+import { Home, DollarSign, Calculator, Code, Palette, Layout, Shield, Users, Settings, ListTodo, BarChart3, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 
 interface SidebarProps {
-  selectedDepartment: string;
-  onDepartmentChange: (department: string) => void;
+  selectedDepartment?: string;
+  onDepartmentChange?: (department: string) => void;
 }
 
 const departments = [
@@ -33,7 +33,7 @@ const adminItems = [
   { id: "admin", name: "Admin Panel", icon: Settings, path: "/admin" },
 ];
 
-export function Sidebar({ selectedDepartment, onDepartmentChange }: SidebarProps) {
+export function Sidebar({ selectedDepartment = "all", onDepartmentChange = () => {} }: SidebarProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -87,6 +87,32 @@ export function Sidebar({ selectedDepartment, onDepartmentChange }: SidebarProps
                   <span>Tasks</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => navigate("/notifications")}
+                  isActive={location.pathname === "/notifications"}
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Notifications</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+          <SidebarGroup>
+          <SidebarGroupLabel>User</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => navigate("/profile")}
+                  isActive={location.pathname === "/profile"}
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Profile</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -114,24 +140,51 @@ export function Sidebar({ selectedDepartment, onDepartmentChange }: SidebarProps
         </SidebarGroup>
 
         {isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Administration</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {adminItems.map((item) => (
-                  <SidebarMenuItem key={item.id}>
+          <>
+            <SidebarGroup>
+              <SidebarGroupLabel>Administration</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {adminItems.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => window.location.href = item.path}
+                        isActive={window.location.pathname === item.path}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupLabel>System</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
                     <SidebarMenuButton
-                      onClick={() => window.location.href = item.path}
-                      isActive={window.location.pathname === item.path}
+                      onClick={() => navigate("/files")}
+                      isActive={location.pathname === "/files"}
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.name}</span>
+                      <ListTodo className="h-4 w-4" />
+                      <span>File Manager</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => navigate("/admin/departments")}
+                      isActive={location.pathname === "/admin/departments"}
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Departments</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
         )}
       </SidebarContent>
     </SidebarUI>

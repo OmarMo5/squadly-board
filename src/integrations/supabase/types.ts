@@ -114,6 +114,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          profile_picture_url: string | null
           updated_at: string | null
         }
         Insert: {
@@ -122,6 +123,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          profile_picture_url?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -130,6 +132,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          profile_picture_url?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -409,7 +412,37 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      all_files: {
+        Row: {
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          file_type: string | null
+          id: string | null
+          related_id: string | null
+          related_name: string | null
+          uploaded_at: string | null
+          uploaded_by: string | null
+          uploader_email: string | null
+          uploader_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_attachments_task_id_fkey"
+            columns: ["related_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_attachments_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_user_role: {
