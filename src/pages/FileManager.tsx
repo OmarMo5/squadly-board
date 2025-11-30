@@ -92,10 +92,9 @@ export default function FileManager() {
       return;
     }
 
-    // Filter files based on user permissions
-    const filteredData = admin ? data : data?.filter(f => f.uploaded_by === userId);
-    setFiles(filteredData || []);
-    setFilteredFiles(filteredData || []);
+    // All users can view all files
+    setFiles(data || []);
+    setFilteredFiles(data || []);
     setLoading(false);
   };
 
@@ -206,7 +205,7 @@ export default function FileManager() {
               <div>
                 <h1 className="text-3xl font-bold">File Manager</h1>
                 <p className="text-muted-foreground">
-                  {isAdmin ? "Manage all files in the system" : "View and manage your uploaded files"}
+                  View all files in the system
                 </p>
               </div>
             </div>

@@ -170,6 +170,17 @@ export function NotificationsDropdown() {
             ))
           )}
         </ScrollArea>
+        <DropdownMenuSeparator />
+        <div className="p-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/notifications")}
+            className="w-full"
+          >
+            View All Notifications
+          </Button>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );

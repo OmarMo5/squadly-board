@@ -459,6 +459,30 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
                     )}
                   </div>
                 )}
+                {!isDeleted && !isAdmin && canEditOrDelete(task) && (
+                  <div className="flex gap-1">
+                    {task.status === "todo" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStatusChange(task.id, "in_progress")}
+                        disabled={isUpdating}
+                      >
+                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Move to In Progress"}
+                      </Button>
+                    )}
+                    {task.status === "in_progress" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStatusChange(task.id, "completed")}
+                        disabled={isUpdating}
+                      >
+                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Mark as Completed"}
+                      </Button>
+                    )}
+                  </div>
+                )}
                 {!isDeleted && isAssignedToMe && (
                   <Button
                     variant={myCompletion ? "outline" : "default"}
