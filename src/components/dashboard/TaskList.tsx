@@ -459,7 +459,7 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
                     )}
                   </div>
                 )}
-                {!isDeleted && !isAdmin && canEditOrDelete(task) && (
+                {!isDeleted && !isAdmin && (canEditOrDelete(task) || isAssignedToMe) && (
                   <div className="flex gap-1">
                     {task.status === "todo" && (
                       <Button
