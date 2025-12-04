@@ -96,8 +96,12 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    checkAdminStatus();
-    fetchTasks();
+    const initializeData = async () => {
+      // First check admin status, then fetch tasks
+      await checkAdminStatus();
+    };
+    
+    initializeData();
     
     // Subscribe to realtime changes
     const channel = supabase
@@ -119,6 +123,11 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
       supabase.removeChannel(channel);
     };
   }, [selectedDepartment, userId]);
+
+  // Fetch tasks when isAdmin state changes
+  useEffect(() => {
+    fetchTasks();
+  }, [isAdmin, selectedDepartment, userId]);
 
   const checkAdminStatus = async () => {
     const { data: roleData } = await supabase
@@ -182,8 +191,14 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
   };
 
   const canEditOrDelete = (task: Task) => {
+    // Task creator always has edit/delete rights
+    const isCreator = task.created_by === userId;
+    // Legacy single assignment check
+    const isLegacyAssigned = task.assigned_to === userId;
+    // Multi-user assignment check
     const isAssigned = task.task_assignments?.some(a => a.user_id === userId) || false;
-    return task.created_by === userId || task.assigned_to === userId || isAssigned || isAdmin;
+    
+    return isCreator || isLegacyAssigned || isAssigned || isAdmin;
   };
 
   const handleMarkComplete = async (taskId: string) => {
