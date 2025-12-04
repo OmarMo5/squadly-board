@@ -125,7 +125,7 @@ export function Sidebar({ selectedDepartment = "all", onDepartmentChange = () =>
                 <SidebarMenuItem key={dept.id}>
                   <SidebarMenuButton
                     onClick={() => {
-                      navigate("/tasks");
+                      navigate(`/tasks?department=${dept.id}`);
                       onDepartmentChange(dept.id);
                     }}
                     isActive={selectedDepartment === dept.id && location.pathname === "/tasks"}

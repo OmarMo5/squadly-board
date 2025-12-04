@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Sidebar } from "@/components/dashboard/Sidebar";
@@ -11,9 +11,15 @@ import { Loader2 } from "lucide-react";
 
 export default function Tasks() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
+  const departmentParam = searchParams.get("department") || "all";
+  const [selectedDepartment, setSelectedDepartment] = useState<string>(departmentParam);
+
+  useEffect(() => {
+    setSelectedDepartment(departmentParam);
+  }, [departmentParam]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(

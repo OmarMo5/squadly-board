@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -154,15 +155,16 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Edit Task</DialogTitle>
-            <DialogDescription>
-              Update task details and assignment
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
+      <DialogContent className="sm:max-w-[525px] max-h-[85vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle>Edit Task</DialogTitle>
+          <DialogDescription>
+            Update task details and assignment
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <ScrollArea className="max-h-[calc(85vh-180px)] pr-4">
+            <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="edit-title">Task Title</Label>
               <Input
@@ -258,8 +260,9 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
                 disabled={loading}
               />
             </div>
-          </div>
-          <DialogFooter>
+            </div>
+          </ScrollArea>
+          <DialogFooter className="mt-4 pt-4 border-t">
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Update Task
