@@ -182,7 +182,8 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
   };
 
   const canEditOrDelete = (task: Task) => {
-    return task.created_by === userId || task.assigned_to === userId || isAdmin;
+    const isAssigned = task.task_assignments?.some(a => a.user_id === userId) || false;
+    return task.created_by === userId || task.assigned_to === userId || isAssigned || isAdmin;
   };
 
   const handleMarkComplete = async (taskId: string) => {
