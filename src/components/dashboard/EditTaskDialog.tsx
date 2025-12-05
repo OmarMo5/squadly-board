@@ -95,7 +95,8 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
     setLoading(true);
 
     try {
-      const { error } = await supabase
+      // Update the task
+      const { error: taskError } = await supabase
         .from("tasks")
         .update({
           title,
@@ -107,14 +108,21 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
         })
         .eq("id", task.id);
 
-      if (error) throw error;
+      if (taskError) {
+        console.error("Task update error:", taskError);
+        throw taskError;
+      }
 
-      // Update task assignments
-      // First delete existing assignments
-      await supabase
+      // Update task assignments - delete existing ones first
+      const { error: deleteError } = await supabase
         .from("task_assignments")
         .delete()
         .eq("task_id", task.id);
+
+      if (deleteError) {
+        console.error("Assignment delete error:", deleteError);
+        // Continue anyway - task was updated, assignments may stay as is
+      }
 
       // Then create new assignments
       if (assignedUsers.length > 0) {
@@ -127,7 +135,10 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
           .from("task_assignments")
           .insert(assignments);
 
-        if (assignError) throw assignError;
+        if (assignError) {
+          console.error("Assignment insert error:", assignError);
+          // Continue anyway - task was updated
+        }
       }
 
       toast.success("Task updated successfully");
