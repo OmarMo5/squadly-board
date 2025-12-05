@@ -94,6 +94,8 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeData = async () => {
@@ -272,6 +274,56 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
     fetchTasks();
   };
 
+  // Drag and Drop handlers
+  const handleDragStart = (e: React.DragEvent, taskId: string, task: Task) => {
+    if (!canChangeStatus(task)) {
+      e.preventDefault();
+      return;
+    }
+    setDraggedTaskId(taskId);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", taskId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTaskId(null);
+    setDragOverColumn(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, column: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverColumn(column);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, newStatus: "todo" | "in_progress" | "completed") => {
+    e.preventDefault();
+    setDragOverColumn(null);
+    
+    const taskId = e.dataTransfer.getData("text/plain");
+    if (!taskId) return;
+
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || task.status === newStatus) {
+      setDraggedTaskId(null);
+      return;
+    }
+
+    // Check if user can change status
+    if (!canChangeStatus(task)) {
+      toast.error("You don't have permission to change this task's status");
+      setDraggedTaskId(null);
+      return;
+    }
+
+    await handleStatusChange(taskId, newStatus);
+    setDraggedTaskId(null);
+  };
+
   const handleDownloadFile = async (filePath: string, fileName: string) => {
     const { data, error } = await supabase.storage
       .from("task-attachments")
@@ -330,9 +382,17 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
     const myCompletion = task.task_completions?.find(c => c.user_id === userId);
     const totalAssigned = task.task_assignments?.length || 0;
     const totalCompleted = task.task_completions?.length || 0;
+    const isDraggable = canChangeStatus(task) && !isDeleted;
+    const isDragging = draggedTaskId === task.id;
 
     return (
-      <Card key={task.id} className={`hover:shadow-md transition-shadow mb-4 ${isDeleted ? "opacity-50 border-destructive" : ""}`}>
+      <Card 
+        key={task.id} 
+        className={`hover:shadow-md transition-shadow mb-4 ${isDeleted ? "opacity-50 border-destructive" : ""} ${isDraggable ? "cursor-grab active:cursor-grabbing" : ""} ${isDragging ? "opacity-50 ring-2 ring-primary" : ""}`}
+        draggable={isDraggable}
+        onDragStart={(e) => handleDragStart(e, task.id, task)}
+        onDragEnd={handleDragEnd}
+      >
         <CardHeader>
           {isDeleted && (
             <Badge variant="destructive" className="w-fit mb-2">
@@ -450,36 +510,40 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
                 Created {formatDistanceToNow(new Date(task.created_at), { addSuffix: true })}
               </span>
               <div className="flex gap-2">
+                {/* Status buttons disabled - use drag & drop to change status */}
                 {!isDeleted && isAdmin && (
                   <div className="flex gap-1">
                     {task.status !== "todo" && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleStatusChange(task.id, "todo")}
-                        disabled={isUpdating}
+                        onClick={() => {}}
+                        disabled={true}
+                        title="Drag task to change status"
                       >
-                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Move to Start"}
+                        Move to Start
                       </Button>
                     )}
                     {task.status !== "in_progress" && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleStatusChange(task.id, "in_progress")}
-                        disabled={isUpdating}
+                        onClick={() => {}}
+                        disabled={true}
+                        title="Drag task to change status"
                       >
-                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Move to In Progress"}
+                        Move to In Progress
                       </Button>
                     )}
                     {task.status !== "completed" && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleStatusChange(task.id, "completed")}
-                        disabled={isUpdating}
+                        onClick={() => {}}
+                        disabled={true}
+                        title="Drag task to change status"
                       >
-                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Move to Complete"}
+                        Move to Complete
                       </Button>
                     )}
                   </div>
@@ -490,20 +554,22 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleStatusChange(task.id, "in_progress")}
-                        disabled={isUpdating}
+                        onClick={() => {}}
+                        disabled={true}
+                        title="Drag task to change status"
                       >
-                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Move to In Progress"}
+                        Move to In Progress
                       </Button>
                     )}
                     {task.status === "in_progress" && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleStatusChange(task.id, "completed")}
-                        disabled={isUpdating}
+                        onClick={() => {}}
+                        disabled={true}
+                        title="Drag task to change status"
                       >
-                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Mark as Completed"}
+                        Mark as Completed
                       </Button>
                     )}
                   </div>
@@ -560,7 +626,12 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Start Column */}
-          <div className="space-y-3">
+          <div 
+            className={`space-y-3 min-h-[200px] p-2 -m-2 rounded-lg transition-colors ${dragOverColumn === "todo" ? "bg-primary/10 ring-2 ring-primary/30" : ""}`}
+            onDragOver={(e) => handleDragOver(e, "todo")}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, "todo")}
+          >
             <div className="flex items-center justify-between pb-2 border-b">
               <h3 className="font-semibold text-lg">Start</h3>
               <Badge variant="secondary">{todoTasks.length}</Badge>
@@ -577,7 +648,12 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
           </div>
 
           {/* In Progress Column */}
-          <div className="space-y-3">
+          <div 
+            className={`space-y-3 min-h-[200px] p-2 -m-2 rounded-lg transition-colors ${dragOverColumn === "in_progress" ? "bg-primary/10 ring-2 ring-primary/30" : ""}`}
+            onDragOver={(e) => handleDragOver(e, "in_progress")}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, "in_progress")}
+          >
             <div className="flex items-center justify-between pb-2 border-b">
               <h3 className="font-semibold text-lg">In Progress</h3>
               <Badge variant="secondary">{inProgressTasks.length}</Badge>
@@ -594,7 +670,12 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
           </div>
 
           {/* Complete Column */}
-          <div className="space-y-3">
+          <div 
+            className={`space-y-3 min-h-[200px] p-2 -m-2 rounded-lg transition-colors ${dragOverColumn === "completed" ? "bg-primary/10 ring-2 ring-primary/30" : ""}`}
+            onDragOver={(e) => handleDragOver(e, "completed")}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, "completed")}
+          >
             <div className="flex items-center justify-between pb-2 border-b">
               <h3 className="font-semibold text-lg">Complete</h3>
               <Badge variant="secondary">{completedTasks.length}</Badge>
