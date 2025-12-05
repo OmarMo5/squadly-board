@@ -201,6 +201,15 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
     return isCreator || isLegacyAssigned || isAssigned || isAdmin;
   };
 
+  // Check if user can change task status (creator, assigned, or admin)
+  const canChangeStatus = (task: Task) => {
+    const isCreator = task.created_by === userId;
+    const isLegacyAssigned = task.assigned_to === userId;
+    const isAssigned = task.task_assignments?.some(a => a.user_id === userId) || false;
+    
+    return isCreator || isLegacyAssigned || isAssigned || isAdmin;
+  };
+
   const handleMarkComplete = async (taskId: string) => {
     setUpdatingStatus(taskId);
 
@@ -475,7 +484,7 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
                     )}
                   </div>
                 )}
-                {!isDeleted && !isAdmin && (canEditOrDelete(task) || isAssignedToMe) && (
+                {!isDeleted && !isAdmin && canChangeStatus(task) && (
                   <div className="flex gap-1">
                     {task.status === "todo" && (
                       <Button
