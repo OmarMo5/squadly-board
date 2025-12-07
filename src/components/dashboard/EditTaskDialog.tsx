@@ -96,7 +96,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
 
     try {
       // Update the task
-      const { error: taskError } = await supabase
+      const { data: taskData, error: taskError } = await supabase
         .from("tasks")
         .update({
           title,
@@ -106,11 +106,21 @@ export function EditTaskDialog({ task, open, onOpenChange, onSuccess }: EditTask
           due_date: dueDate || null,
           status: status as "todo" | "in_progress" | "completed",
         })
-        .eq("id", task.id);
+        .eq("id", task.id)
+        .select();
 
       if (taskError) {
         console.error("Task update error:", taskError);
-        throw taskError;
+        toast.error(`Failed to update task: ${taskError.message}`);
+        setLoading(false);
+        return;
+      }
+
+      if (!taskData || taskData.length === 0) {
+        console.error("No rows updated - permission denied or task not found");
+        toast.error("Permission denied: You cannot edit this task");
+        setLoading(false);
+        return;
       }
 
       // Update task assignments - delete existing ones first
