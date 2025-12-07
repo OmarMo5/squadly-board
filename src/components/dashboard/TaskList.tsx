@@ -177,19 +177,32 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    // Soft delete - only set deleted_at timestamp
-    const { error } = await supabase
-      .from("tasks")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", taskId);
+    try {
+      // Soft delete - only set deleted_at timestamp
+      const { data, error } = await supabase
+        .from("tasks")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", taskId)
+        .select();
 
-    if (error) {
-      toast.error("Failed to delete task");
-      return;
+      if (error) {
+        console.error("Delete error:", error);
+        toast.error(`Failed to delete task: ${error.message}`);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        console.error("No rows deleted - permission denied or task not found");
+        toast.error("Permission denied or task not found");
+        return;
+      }
+
+      toast.success("Task deleted successfully");
+      fetchTasks();
+    } catch (err) {
+      console.error("Unexpected delete error:", err);
+      toast.error("An unexpected error occurred");
     }
-
-    toast.success("Task deleted successfully");
-    fetchTasks();
   };
 
   const canEditOrDelete = (task: Task) => {
@@ -259,15 +272,36 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
   const handleStatusChange = async (taskId: string, newStatus: "todo" | "in_progress" | "completed") => {
     setUpdatingStatus(taskId);
 
-    const { error } = await supabase
-      .from("tasks")
-      .update({ status: newStatus })
-      .eq("id", taskId);
+    try {
+      const updatePayload: { status: "todo" | "in_progress" | "completed"; completed_at?: string | null } = { 
+        status: newStatus 
+      };
+      
+      // Set completed_at when moving to completed status
+      if (newStatus === "completed") {
+        updatePayload.completed_at = new Date().toISOString();
+      } else {
+        updatePayload.completed_at = null;
+      }
 
-    if (error) {
-      toast.error("Failed to update task status");
-    } else {
-      toast.success("Task status updated!");
+      const { data, error } = await supabase
+        .from("tasks")
+        .update(updatePayload)
+        .eq("id", taskId)
+        .select();
+
+      if (error) {
+        console.error("Status update error:", error);
+        toast.error(`Failed to update task status: ${error.message}`);
+      } else if (!data || data.length === 0) {
+        console.error("No rows updated - permission denied or task not found");
+        toast.error("Permission denied or task not found");
+      } else {
+        toast.success("Task status updated!");
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      toast.error("An unexpected error occurred");
     }
 
     setUpdatingStatus(null);
