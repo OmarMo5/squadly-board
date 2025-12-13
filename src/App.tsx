@@ -18,36 +18,39 @@ import FileManager from "./pages/FileManager";
 import DepartmentManagement from "./pages/DepartmentManagement";
 import NotFound from "./pages/NotFound";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <SidebarProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Home />} />
-            <Route path="/tasks" element={<Tasks />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/admin/roles" element={<RolesPermissions />} />
-            <Route path="/admin/users" element={<UsersManagement />} />
-            <Route path="/admin/admins" element={<AdminManagement />} />
-            <Route path="/admin/task-history" element={<AdminTaskHistory />} />
-            <Route path="/admin/departments" element={<DepartmentManagement />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/notifications" element={<NotificationsCenter />} />
-            <Route path="/files" element={<FileManager />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </SidebarProvider>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <SidebarProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<Home />} />
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/roles" element={<RolesPermissions />} />
+              <Route path="/admin/users" element={<UsersManagement />} />
+              <Route path="/admin/admins" element={<AdminManagement />} />
+              <Route path="/admin/task-history" element={<AdminTaskHistory />} />
+              <Route path="/admin/departments" element={<DepartmentManagement />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/notifications" element={<NotificationsCenter />} />
+              <Route path="/files" element={<FileManager />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </SidebarProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

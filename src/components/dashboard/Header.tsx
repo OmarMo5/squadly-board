@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function Header() {
   const navigate = useNavigate();
@@ -85,6 +86,7 @@ export function Header() {
             </Button>
           )}
 
+          <ThemeToggle />
           <NotificationsDropdown />
 
           <DropdownMenu>
