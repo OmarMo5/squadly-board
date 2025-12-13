@@ -544,66 +544,55 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
                 Created {formatDistanceToNow(new Date(task.created_at), { addSuffix: true })}
               </span>
               <div className="flex gap-2">
-                {/* Status buttons disabled - use drag & drop to change status */}
-                {!isDeleted && isAdmin && (
-                  <div className="flex gap-1">
-                    {task.status !== "todo" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {}}
-                        disabled={true}
-                        title="Drag task to change status"
-                      >
-                        Move to Start
-                      </Button>
-                    )}
-                    {task.status !== "in_progress" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {}}
-                        disabled={true}
-                        title="Drag task to change status"
-                      >
-                        Move to In Progress
-                      </Button>
-                    )}
-                    {task.status !== "completed" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {}}
-                        disabled={true}
-                        title="Drag task to change status"
-                      >
-                        Move to Complete
-                      </Button>
-                    )}
-                  </div>
-                )}
-                {!isDeleted && !isAdmin && canChangeStatus(task) && (
+                {/* Status buttons - click to change status OR drag & drop between columns */}
+                {!isDeleted && canChangeStatus(task) && (
                   <div className="flex gap-1">
                     {task.status === "todo" && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {}}
-                        disabled={true}
-                        title="Drag task to change status"
+                        onClick={() => handleStatusChange(task.id, "in_progress")}
+                        disabled={isUpdating}
+                        title="Move to In Progress"
                       >
-                        Move to In Progress
+                        {isUpdating ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <PlayCircle className="h-4 w-4 mr-1" />}
+                        Start
                       </Button>
                     )}
                     {task.status === "in_progress" && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleStatusChange(task.id, "todo")}
+                          disabled={isUpdating}
+                          title="Move back to Start"
+                        >
+                          {isUpdating ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Clock className="h-4 w-4 mr-1" />}
+                          Back
+                        </Button>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleStatusChange(task.id, "completed")}
+                          disabled={isUpdating}
+                          title="Mark as Completed"
+                        >
+                          {isUpdating ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCheck className="h-4 w-4 mr-1" />}
+                          Complete
+                        </Button>
+                      </>
+                    )}
+                    {task.status === "completed" && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {}}
-                        disabled={true}
-                        title="Drag task to change status"
+                        onClick={() => handleStatusChange(task.id, "in_progress")}
+                        disabled={isUpdating}
+                        title="Reopen task"
                       >
-                        Mark as Completed
+                        {isUpdating ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <PlayCircle className="h-4 w-4 mr-1" />}
+                        Reopen
                       </Button>
                     )}
                   </div>
