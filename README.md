@@ -1,73 +1,213 @@
-# Welcome to your Lovable project
+# Company Task Management & Communication Dashboard
 
-## Project info
+A full-stack task management and internal communication dashboard designed for companies and teams.  
+The system enables admins, managers, and employees to collaborate efficiently through tasks, notifications, departments, and role-based permissions.
 
-**URL**: https://lovable.dev/projects/91fe0a0a-ef57-464b-8fb0-a042d6e68f2b
+---
 
-## How can I edit this code?
+## 🚀 Project Overview
 
-There are several ways of editing your application.
+This dashboard allows:
+- Creating and managing tasks between team members
+- Assigning tasks with mentions and notifications
+- Tracking task progress (Start → In Progress → Completed)
+- Managing users, admins, roles, and permissions
+- Organizing work by departments
+- Viewing analytics, activity logs, and uploaded files
 
-**Use Lovable**
+The system is built with a **React + TailwindCSS frontend** and a **Laravel (PHP) backend**, using **JWT authentication**.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/91fe0a0a-ef57-464b-8fb0-a042d6e68f2b) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🧱 Tech Stack
 
-**Use your preferred IDE**
+### Frontend
+- React.js
+- JavaScript
+- HTML5 / CSS3
+- TailwindCSS
+- Responsive Design
+- Skeleton Loading
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Backend
+- PHP
+- Laravel
+- RESTful APIs
+- JWT Authentication
+- WebSockets / Laravel Echo (Notifications)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Database
+- MySQL
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 👥 User Roles
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Admin
+- Full access to all features
+- Manage users, admins, roles, permissions
+- View and manage all tasks
+- View all notifications and activity logs
+- Access system analytics and reports
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Manager
+- Create and assign tasks
+- Manage tasks within their department
+- Upload attachments
+- Track task progress
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Employee
+- View assigned tasks
+- Update task status
+- Upload attachments
+- Receive notifications and mentions
+
+---
+
+## 📄 Pages & Features
+
+### 🔐 Authentication
+- **Login Page**
+- **Register Page**
+- Secure authentication using JWT
+
+---
+
+### 📊 Dashboard (Home Page)
+- Overview analytics:
+  - Total tasks
+  - Tasks in Start
+  - Tasks In Progress
+  - Completed tasks
+- Performance charts
+- Visible based on user role
+
+---
+
+### ✅ Task Management Page
+- Create tasks with:
+  - Title & description
+  - Assignees (single or multiple)
+  - Mentions (@user)
+  - Attachments (images / PDFs)
+- Task statuses:
+  - Start
+  - In Progress
+  - Completed
+- Move tasks between statuses (buttons or drag & drop)
+- Edit and delete tasks (by creator)
+- Completion confirmation sends notification to task creator
+
+---
+
+### 🔔 Notifications Center
+- Task assigned notifications
+- Task completed notifications
+- Mentions notifications
+- Role and admin actions
+- Notification badge in navbar
+- Notifications persist until marked as read
+
+---
+
+### 🏢 Departments Page
+- Create, edit, and delete departments
+- View tasks by department
+- Assign users to departments
+- Each department opens its own task view
+
+---
+
+### 👤 Profile Page
+- Edit name and email
+- Change password
+- Upload profile image
+- View personal tasks
+- Basic performance analytics
+
+---
+
+### 🗂️ Global File Manager
+- View all uploaded files:
+  - Images
+  - PDFs
+  - Attachments
+- Search and filter by:
+  - User
+  - Task
+  - Department
+- Admin-only delete & management actions
+- Visible to all users (read-only for non-admins)
+
+---
+
+### 🛡️ Roles & Permissions
+- Create roles with custom permissions
+- Assign permissions to roles
+- Edit or delete roles
+- Assign roles to users and admins
+
+---
+
+### 👨‍💼 Admin Management
+- Create, edit, and delete admins
+- Assign roles and permissions
+- Unique email validation
+- Full CRUD operations
+
+---
+
+### 👥 User Management
+- View all users
+- Create new users
+- Edit user information
+- Change user passwords
+- Delete users (permanently)
+
+---
+
+### 🧾 Activity Log
+- Tracks all system actions:
+  - Task creation, update, completion
+  - User creation and deletion
+  - Role and permission changes
+- Timestamped and ordered
+
+---
+
+### 🌗 Dark / Light Mode
+- Global dark and light theme
+- Works across all dashboard pages
+- User preference preserved
+
+---
+
+## ⚙️ How to Run the Project
+
+### Backend (Laravel)
+
+# Install dependencies
+composer install
+
+# Create environment file
+cp .env.example .env
+
+# Generate app key
+php artisan key:generate
+
+# Configure database in .env
+
+# Run migrations
+php artisan migrate
+
+# Start server
+php artisan serve
+
+
+### Front-End (React Js)
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/91fe0a0a-ef57-464b-8fb0-a042d6e68f2b) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
