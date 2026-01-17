@@ -174,6 +174,8 @@ export default function Profile() {
     } else {
       toast({ title: "Success", description: "Profile picture updated" });
       await fetchProfile(user.id);
+      // Emit event to update navbar avatar instantly
+      window.dispatchEvent(new Event("profile-updated"));
     }
 
     setUploading(false);

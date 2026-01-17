@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { NotificationsDropdown } from "./NotificationsDropdown";
@@ -22,29 +22,43 @@ export function Header() {
   const navigate = useNavigate();
   const [userName, setUserName] = useState<string>("");
   const [userRole, setUserRole] = useState<string>("");
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+
+  const fetchUserData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, profile_picture_url")
+        .eq("id", user.id)
+        .single();
+
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      if (profile) {
+        setUserName(profile.full_name);
+        setUserAvatar(profile.profile_picture_url);
+      }
+      if (roleData) setUserRole(roleData.role);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", user.id)
-          .single();
+    fetchUserData();
 
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .single();
-
-        if (profile) setUserName(profile.full_name);
-        if (roleData) setUserRole(roleData.role);
-      }
+    // Listen for profile updates to sync avatar instantly
+    const handleProfileUpdate = () => {
+      fetchUserData();
     };
 
-    fetchUserData();
+    window.addEventListener("profile-updated", handleProfileUpdate);
+    return () => {
+      window.removeEventListener("profile-updated", handleProfileUpdate);
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -93,6 +107,7 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
+                  <AvatarImage src={userAvatar || undefined} alt={userName} />
                   <AvatarFallback className="bg-primary text-primary-foreground">
                     {userName ? getInitials(userName) : <User className="h-4 w-4" />}
                   </AvatarFallback>
