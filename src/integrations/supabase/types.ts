@@ -445,6 +445,10 @@ export type Database = {
       }
     }
     Functions: {
+      get_user_department: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["department_type"]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -458,6 +462,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_assigned_to_task: {
+        Args: { _task_id: string; _user_id: string }
         Returns: boolean
       }
     }
