@@ -9,7 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Home, DollarSign, Calculator, Code, Palette, Layout, Shield, Users, Settings, ListTodo, BarChart3, FileText } from "lucide-react";
+import { Home, DollarSign, Calculator, Code, Palette, Layout, Shield, Users, Settings, ListTodo, BarChart3, FileText, Paperclip } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -94,6 +94,15 @@ export function Sidebar({ selectedDepartment = "all", onDepartmentChange = () =>
                 >
                   <BarChart3 className="h-4 w-4" />
                   <span>Notifications</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => navigate("/my-files")}
+                  isActive={location.pathname === "/my-files"}
+                >
+                  <Paperclip className="h-4 w-4" />
+                  <span>My Files</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

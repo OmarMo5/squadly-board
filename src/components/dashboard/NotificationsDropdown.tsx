@@ -103,7 +103,7 @@ export function NotificationsDropdown() {
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
     if (notification.related_task_id) {
-      navigate("/tasks");
+      navigate(`/tasks?highlightTask=${notification.related_task_id}`);
     }
   };
 
