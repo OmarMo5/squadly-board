@@ -96,15 +96,17 @@ export function Sidebar({ selectedDepartment = "all", onDepartmentChange = () =>
                   <span>Notifications</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => navigate("/my-files")}
-                  isActive={location.pathname === "/my-files"}
-                >
-                  <Paperclip className="h-4 w-4" />
-                  <span>My Files</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {!isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => navigate("/my-files")}
+                    isActive={location.pathname === "/my-files"}
+                  >
+                    <Paperclip className="h-4 w-4" />
+                    <span>My Files</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
