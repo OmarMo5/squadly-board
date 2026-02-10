@@ -94,7 +94,7 @@ export default function NotificationsCenter() {
       markAsRead(notification.id);
     }
     if (notification.related_task_id) {
-      navigate("/tasks");
+      navigate(`/tasks?highlightTask=${notification.related_task_id}`);
     }
   };
 

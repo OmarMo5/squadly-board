@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -89,6 +90,7 @@ function TaskSkeleton() {
 }
 
 export function TaskList({ selectedDepartment, userId }: TaskListProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -96,6 +98,8 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+  const [highlightedTaskId, setHighlightedTaskId] = useState<string | null>(null);
+  const taskRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     const initializeData = async () => {
@@ -130,6 +134,29 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
   useEffect(() => {
     fetchTasks();
   }, [isAdmin, selectedDepartment, userId]);
+
+  // Handle highlight from URL param
+  useEffect(() => {
+    const taskId = searchParams.get("highlightTask");
+    if (taskId && !loading && tasks.length > 0) {
+      setHighlightedTaskId(taskId);
+      // Scroll to the task
+      setTimeout(() => {
+        const el = taskRefs.current[taskId];
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 200);
+      // Remove highlight after 3 seconds
+      setTimeout(() => {
+        setHighlightedTaskId(null);
+      }, 3000);
+      // Clean URL param
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("highlightTask");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [loading, tasks, searchParams]);
 
   const checkAdminStatus = async () => {
     const { data: roleData } = await supabase
@@ -419,10 +446,13 @@ export function TaskList({ selectedDepartment, userId }: TaskListProps) {
     const isDraggable = canChangeStatus(task) && !isDeleted;
     const isDragging = draggedTaskId === task.id;
 
+    const isHighlighted = highlightedTaskId === task.id;
+
     return (
       <Card 
-        key={task.id} 
-        className={`hover:shadow-md transition-shadow mb-4 ${isDeleted ? "opacity-50 border-destructive" : ""} ${isDraggable ? "cursor-grab active:cursor-grabbing" : ""} ${isDragging ? "opacity-50 ring-2 ring-primary" : ""}`}
+        key={task.id}
+        ref={(el) => { taskRefs.current[task.id] = el; }}
+        className={`hover:shadow-md transition-all mb-4 ${isDeleted ? "opacity-50 border-destructive" : ""} ${isDraggable ? "cursor-grab active:cursor-grabbing" : ""} ${isDragging ? "opacity-50 ring-2 ring-primary" : ""} ${isHighlighted ? "ring-2 ring-primary bg-primary/5 animate-pulse" : ""}`}
         draggable={isDraggable}
         onDragStart={(e) => handleDragStart(e, task.id, task)}
         onDragEnd={handleDragEnd}
