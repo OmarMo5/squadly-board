@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import AdminLogin from "./pages/AdminLogin";
+import { AdminRouteGuard } from "./components/admin/AdminRouteGuard";
 import Home from "./pages/Home";
 import Tasks from "./pages/Tasks";
 import Admin from "./pages/Admin";
@@ -34,14 +36,15 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/dashboard" element={<Home />} />
               <Route path="/tasks" element={<Tasks />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/admin/roles" element={<RolesPermissions />} />
-              <Route path="/admin/users" element={<UsersManagement />} />
-              <Route path="/admin/admins" element={<AdminManagement />} />
-              <Route path="/admin/task-history" element={<AdminTaskHistory />} />
-              <Route path="/admin/departments" element={<DepartmentManagement />} />
+              <Route path="/admin" element={<AdminRouteGuard><Admin /></AdminRouteGuard>} />
+              <Route path="/admin/roles" element={<AdminRouteGuard><RolesPermissions /></AdminRouteGuard>} />
+              <Route path="/admin/users" element={<AdminRouteGuard><UsersManagement /></AdminRouteGuard>} />
+              <Route path="/admin/admins" element={<AdminRouteGuard><AdminManagement /></AdminRouteGuard>} />
+              <Route path="/admin/task-history" element={<AdminRouteGuard><AdminTaskHistory /></AdminRouteGuard>} />
+              <Route path="/admin/departments" element={<AdminRouteGuard><DepartmentManagement /></AdminRouteGuard>} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/notifications" element={<NotificationsCenter />} />
               <Route path="/files" element={<FileManager />} />
