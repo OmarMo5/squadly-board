@@ -8,6 +8,7 @@ import { Loader2, ArrowLeft, Bell, Check, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/dashboard/Header";
 import { Sidebar } from "@/components/dashboard/Sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {
