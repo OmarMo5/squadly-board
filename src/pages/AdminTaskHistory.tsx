@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { Header } from "@/components/dashboard/Header";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, History, User, Calendar, CheckCircle2, Trash2 } from "lucide-react";
