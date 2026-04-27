@@ -10,6 +10,7 @@ import { Loader2, ArrowLeft, Users, CheckCircle2, Plus, Edit2, Trash2 } from "lu
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/dashboard/Header";
 import { Sidebar } from "@/components/dashboard/Sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
