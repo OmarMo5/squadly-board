@@ -413,6 +413,7 @@ export default function DepartmentManagement() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }
