@@ -290,23 +290,25 @@ export default function UsersManagement() {
           <div className="mt-4 text-sm text-muted-foreground">
             Showing {filteredUsers.length} of {users.length} users
           </div>
-        </main>
-      </div>
+              </div>
+            </main>
+          )}
+        </div>
 
-      <CreateUserDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        onSuccess={fetchUsers}
-      />
-
-      {editingUser && (
-        <EditUserDialog
-          user={editingUser}
-          open={!!editingUser}
-          onOpenChange={(open) => !open && setEditingUser(null)}
+        <CreateUserDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
           onSuccess={fetchUsers}
         />
-      )}
+
+        {editingUser && (
+          <EditUserDialog
+            user={editingUser}
+            open={!!editingUser}
+            onOpenChange={(open) => !open && setEditingUser(null)}
+            onSuccess={fetchUsers}
+          />
+        )}
       </div>
     </SidebarProvider>
   );
