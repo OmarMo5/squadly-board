@@ -407,9 +407,11 @@ export default function Profile() {
                 </Card>
               </TabsContent>
             </Tabs>
-          </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
