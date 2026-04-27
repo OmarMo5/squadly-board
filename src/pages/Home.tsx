@@ -100,15 +100,7 @@ export default function Home() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!session) {
+  if (!session && !loading) {
     return null;
   }
 
@@ -125,7 +117,11 @@ export default function Home() {
         
         <main className="flex-1 flex flex-col overflow-hidden">
           <Header />
-          
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
           <div className="flex-1 overflow-auto p-6">
             <div className="max-w-7xl mx-auto space-y-6">
               <div>
@@ -267,6 +263,7 @@ export default function Home() {
               </Card>
             </div>
           </div>
+          )}
         </main>
       </div>
     </SidebarProvider>

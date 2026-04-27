@@ -8,6 +8,7 @@ import { Loader2, ArrowLeft, Bell, Check, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/dashboard/Header";
 import { Sidebar } from "@/components/dashboard/Sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {
@@ -118,21 +119,19 @@ export default function NotificationsCenter() {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-4xl mx-auto space-y-6">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <Sidebar />
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="flex-1 overflow-auto p-6">
+              <div className="max-w-4xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
@@ -212,9 +211,11 @@ export default function NotificationsCenter() {
                 ))
               )}
             </div>
-          </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

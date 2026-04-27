@@ -8,6 +8,7 @@ import { Loader2, ArrowLeft, Search, Download, FileText, Image as ImageIcon, Pap
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/dashboard/Header";
 import { Sidebar } from "@/components/dashboard/Sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { formatDistanceToNow } from "date-fns";
 import {
   Table,
@@ -151,104 +152,104 @@ export default function MyFiles() {
     URL.revokeObjectURL(url);
   };
 
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold">My Files</h1>
-                <p className="text-muted-foreground">
-                  Files from tasks assigned to you or created by you
-                </p>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <Sidebar />
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="flex-1 overflow-auto p-6">
+              <div className="max-w-7xl mx-auto space-y-6">
+                <div className="flex items-center gap-4">
+                  <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <div>
+                    <h1 className="text-3xl font-bold">My Files</h1>
+                    <p className="text-muted-foreground">
+                      Files from tasks assigned to you or created by you
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by file name or task..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {filteredFiles.length} file{filteredFiles.length !== 1 ? "s" : ""}
+                  </div>
+                </div>
+
+                {filteredFiles.length === 0 ? (
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <Paperclip className="h-12 w-12 text-muted-foreground mb-4" />
+                      <p className="text-lg font-medium">No files found</p>
+                      <p className="text-sm text-muted-foreground">
+                        {searchQuery ? "Try a different search term" : "No files attached to your tasks yet"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>File</TableHead>
+                          <TableHead>Task</TableHead>
+                          <TableHead>Size</TableHead>
+                          <TableHead>Uploaded</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredFiles.map((file) => (
+                          <TableRow key={file.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {getFileIcon(file.file_name)}
+                                <span className="font-medium">{file.file_name}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{file.task_title}</TableCell>
+                            <TableCell>{formatFileSize(file.file_size)}</TableCell>
+                            <TableCell>
+                              {file.created_at
+                                ? formatDistanceToNow(new Date(file.created_at), { addSuffix: true })
+                                : "-"}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleDownload(file.file_path, file.file_name)}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Card>
+                )}
               </div>
             </div>
-
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by file name or task..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {filteredFiles.length} file{filteredFiles.length !== 1 ? "s" : ""}
-              </div>
-            </div>
-
-            {filteredFiles.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Paperclip className="h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-lg font-medium">No files found</p>
-                  <p className="text-sm text-muted-foreground">
-                    {searchQuery ? "Try a different search term" : "No files attached to your tasks yet"}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>File</TableHead>
-                      <TableHead>Task</TableHead>
-                      <TableHead>Size</TableHead>
-                      <TableHead>Uploaded</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredFiles.map((file) => (
-                      <TableRow key={file.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getFileIcon(file.file_name)}
-                            <span className="font-medium">{file.file_name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>{file.task_title}</TableCell>
-                        <TableCell>{formatFileSize(file.file_size)}</TableCell>
-                        <TableCell>
-                          {file.created_at
-                            ? formatDistanceToNow(new Date(file.created_at), { addSuffix: true })
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleDownload(file.file_path, file.file_name)}
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Card>
-            )}
-          </div>
+          )}
         </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
