@@ -458,7 +458,9 @@ export default function AdminManagement() {
             <div className="mt-4 text-sm text-muted-foreground">
               Showing {filteredAdmins.length} of {admins.length} admins
             </div>
-          </main>
+              </div>
+            </main>
+          )}
         </div>
 
         {editingAdmin && (
