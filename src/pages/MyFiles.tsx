@@ -8,6 +8,7 @@ import { Loader2, ArrowLeft, Search, Download, FileText, Image as ImageIcon, Pap
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/dashboard/Header";
 import { Sidebar } from "@/components/dashboard/Sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { formatDistanceToNow } from "date-fns";
 import {
   Table,
