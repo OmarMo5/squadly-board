@@ -211,9 +211,11 @@ export default function NotificationsCenter() {
                 ))
               )}
             </div>
-          </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
