@@ -231,21 +231,23 @@ export default function RolesPermissions() {
               );
             })}
           </div>
-        </main>
-      </div>
+              </div>
+            </main>
+          )}
+        </div>
 
-      {selectedRole && (
-        <RolePermissionsDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          role={selectedRole}
-          allPermissions={permissions}
-          currentPermissions={
-            rolePermissions.find((rp) => rp.role === selectedRole)?.permissions || []
-          }
-          onSave={handleSavePermissions}
-        />
-      )}
+        {selectedRole && (
+          <RolePermissionsDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            role={selectedRole}
+            allPermissions={permissions}
+            currentPermissions={
+              rolePermissions.find((rp) => rp.role === selectedRole)?.permissions || []
+            }
+            onSave={handleSavePermissions}
+          />
+        )}
       </div>
     </SidebarProvider>
   );
