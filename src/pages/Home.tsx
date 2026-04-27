@@ -263,6 +263,7 @@ export default function Home() {
               </Card>
             </div>
           </div>
+          )}
         </main>
       </div>
     </SidebarProvider>
