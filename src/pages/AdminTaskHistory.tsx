@@ -289,7 +289,6 @@ export default function AdminTaskHistory() {
           </div>
         </div>
               </div>
-            </div>
           )}
         </main>
       </div>
