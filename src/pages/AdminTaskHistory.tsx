@@ -288,7 +288,11 @@ export default function AdminTaskHistory() {
             )}
           </div>
         </div>
-      </main>
-    </div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    </SidebarProvider>
   );
 }
