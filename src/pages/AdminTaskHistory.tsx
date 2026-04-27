@@ -99,15 +99,7 @@ export default function AdminTaskHistory() {
     setLoading(false);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!session) {
+  if (!session && !loading) {
     return null;
   }
 
@@ -134,17 +126,24 @@ export default function AdminTaskHistory() {
   };
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <AdminSidebar />
-      
-      <main className="flex-1 p-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold flex items-center gap-2">
-                <History className="h-8 w-8" />
-                Task History
-              </h1>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AdminSidebar />
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="flex-1 overflow-auto p-6">
+              <div className="max-w-7xl mx-auto space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-bold flex items-center gap-2">
+                      <History className="h-8 w-8" />
+                      Task History
+                    </h1>
               <p className="text-muted-foreground mt-2">
                 Complete history of all tasks including completed and deleted
               </p>
