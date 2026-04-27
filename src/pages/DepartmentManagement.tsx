@@ -317,9 +317,10 @@ export default function DepartmentManagement() {
                 </p>
               </CardContent>
             </Card>
-          </div>
+              </div>
+            </div>
+          )}
         </main>
-      </div>
 
       {/* Create Department Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
